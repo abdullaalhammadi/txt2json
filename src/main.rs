@@ -1,32 +1,34 @@
 use std::fs::File;
 use std::io::{BufRead, BufReader, Lines};
-use std::iter::zip;
+use std::iter::{zip, Peekable};
 use std::time::Instant;
 
-fn read_table(path: &str) -> Lines<BufReader<File>> {
+fn read_table(path: &str) -> Peekable<Lines<BufReader<File>>> {
     let f = match File::open(path) {
         Ok(val) => val,
         Err(e) => panic!("No need to panic! {}", e)
     };
-
-    let content: Lines<BufReader<File>> = BufReader::new(f).lines();
+    let content: Peekable<Lines<BufReader<File>>> = BufReader::new(f).lines().peekable();
     return content;
 }
 
-fn get_headers(mut file: Lines<BufReader<File>>) -> Vec<String> {
-    let head = match file.next() {
-        Some(a) => a,
-        None => panic!("Nothing available")
+fn get_headers(file: &mut Peekable<Lines<BufReader<File>>>) -> Vec<String> {
+    // Peek at the first item which does not consume it
+    let line = match file.peek() {
+        Some(Ok(line)) => line,
+        Some(Err(e)) => panic!("Error reading line: {}", e),
+        None => panic!("No headers available"),
     };
-    let headers = head.unwrap()
-                                .split("\t")
-                                .map(|x| x.to_string())
-                                .collect();
 
-    return headers;
+    // Clone the line string to create an owned version of the headers
+    let headers = line.split('\t')
+                      .map(|x| x.to_string())
+                      .collect::<Vec<String>>();
+
+    headers
 }
 
-fn get_records(file: Lines<BufReader<File>>, headers: Vec<String>) {
+fn get_records(file: Peekable<Lines<BufReader<File>>>, headers: Vec<String>) {
     let mut dataset: String = String::new();
     for record in file.skip(1) {
         let datapoint = match record {
@@ -62,8 +64,9 @@ fn get_records(file: Lines<BufReader<File>>, headers: Vec<String>) {
 
 fn main() {
     let start = Instant::now();
-    let headers = get_headers(read_table("src/data.txt"));
-    get_records(read_table("src/data.txt"), headers);
+    let mut table = read_table("src/data.txt");
+    let headers = get_headers(&mut table);
+    get_records(table, headers);
     let duration = start.elapsed();
     println!("{:#?}", duration)
 }
