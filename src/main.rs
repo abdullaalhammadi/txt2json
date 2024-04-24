@@ -1,6 +1,7 @@
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::iter::zip;
+use std::time::Instant;
 
 fn read_table() {
     let f = match File::open("src/data.txt") {
@@ -56,5 +57,8 @@ fn read_table() {
 }
 
 fn main() {
+    let start = Instant::now();
     read_table();
+    let duration = start.elapsed();
+    println!("{:#?}", duration)
 }
