@@ -1,0 +1,4 @@
+name	position	tot_points
+Mohamed Salah	MID	59
+Ollie Watkins	FWD	59
+Joachim Andersen	DEF	51
