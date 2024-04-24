@@ -38,11 +38,21 @@ fn read_table() {
                 record.push_str(entry.as_str());
             }
             record.insert(0, '{');
-            record.push_str("},");
+            if !record.ends_with(",") {
+                record.push('}');
+            } else {
+                record.pop(); // Remove the last comma
+                record.push('}');
+            }
+            record.push(',');
+            // record.push_str("},");
             dataset.push_str(record.as_str());
-            println!("{record}");
         }
     }
+    dataset.insert(0, '[');
+    dataset.pop();
+    dataset.push(']');
+    println!("{dataset}")
 }
 
 fn main() {
