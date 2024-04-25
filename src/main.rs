@@ -1,7 +1,16 @@
 use std::fs::File;
+use std::io::Write;
 use std::io::{BufRead, BufReader, Lines};
 use std::iter::{zip, Peekable};
 use std::time::{Instant, Duration};
+
+fn init_file() -> File {
+    let file = File::create("src/dummy.json");
+    match file {
+        Ok(file) => file,
+        Err(e) => panic!("Error: {}", e)
+    }
+}
 
 fn read_table(path: &str) -> Peekable<Lines<BufReader<File>>> {
     let f: File = match File::open(path) {
@@ -30,8 +39,12 @@ fn get_headers(file: &mut Peekable<Lines<BufReader<File>>>) -> Vec<String> {
     headers
 }
 
-fn get_records(file: Peekable<Lines<BufReader<File>>>, headers: Vec<String>) {
-    let mut dataset: String = String::new();
+fn get_records(file: Peekable<Lines<BufReader<File>>>, headers: Vec<String>, mut output: File) {
+    match output.write(b"[") {
+        Ok(size) => size,
+        Err(e) => panic!("This was not supposed to happen: {}", e)
+    };
+
     for record in file.skip(1) {
         let datapoint = match record {
             Ok(dp) => dp,
@@ -49,26 +62,27 @@ fn get_records(file: Peekable<Lines<BufReader<File>>>, headers: Vec<String>) {
             record.push_str(entry.as_str());
         }
         record.insert(0, '{');
-        if !record.ends_with(",") {
+        if record.ends_with(",") {
+            record.pop();
             record.push('}');
         } else {
-            record.pop(); // Remove the last comma
             record.push('}');
         }
         record.push(',');
-        dataset.push_str(record.as_str());
+        match output.write_all(record.as_bytes()) {
+            Ok(size) => size,
+            Err(e) => panic!("This was not supposed to happen: {}", e)
+        };
+        // dataset.push_str(record.as_str());
     }
-    dataset.insert(0, '[');
-    dataset.pop();
-    dataset.push(']');
-    println!("{dataset}");
 }
 
 fn main() {
     let start: Instant = Instant::now();
     let mut table = read_table("src/data.txt");
     let headers = get_headers(&mut table);
-    get_records(table, headers);
+    let res = init_file();
+    get_records(table, headers, res);
     let duration: Duration = start.elapsed();
     println!("{:#?}", duration)
 }
