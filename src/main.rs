@@ -1,8 +1,8 @@
 use std::fs::File;
-use std::io::Write;
+use std::io::{SeekFrom, Write, Seek};
 use std::io::{BufRead, BufReader, Lines};
 use std::iter::{zip, Peekable};
-use std::time::{Instant, Duration};
+use std::time::Instant;
 
 fn init_file() -> File {
     let file = File::create("src/dummy.json");
@@ -39,14 +39,16 @@ fn get_headers(file: &mut Peekable<Lines<BufReader<File>>>) -> Vec<String> {
     headers
 }
 
-fn get_records(file: Peekable<Lines<BufReader<File>>>, headers: Vec<String>, mut output: File) {
+fn get_records(mut file: Peekable<Lines<BufReader<File>>>, headers: Vec<String>, mut output: File) {
     match output.write(b"[") {
         Ok(size) => size,
         Err(e) => panic!("This was not supposed to happen: {}", e)
     };
+    
+    file.next();
 
-    for record in file.skip(1) {
-        let datapoint = match record {
+    for line in file {
+        let datapoint = match line {
             Ok(dp) => dp,
             Err(e) => panic!("Calm down please {}", e)
         };
@@ -68,13 +70,21 @@ fn get_records(file: Peekable<Lines<BufReader<File>>>, headers: Vec<String>, mut
         } else {
             record.push('}');
         }
+
         record.push(',');
+
         match output.write_all(record.as_bytes()) {
             Ok(size) => size,
             Err(e) => panic!("This was not supposed to happen: {}", e)
         };
-        // dataset.push_str(record.as_str());
+    
     }
+    match output.seek(SeekFrom::End(-1)) {
+        Ok(a) => a,
+        Err(e) => panic!("Take it easy: {}", e)
+    };
+    // output.write(b"]")
+    output.write(b"]").unwrap();
 }
 
 fn main() {
@@ -83,6 +93,5 @@ fn main() {
     let headers = get_headers(&mut table);
     let res = init_file();
     get_records(table, headers, res);
-    let duration: Duration = start.elapsed();
-    println!("{:#?}", duration)
+    println!("{:#?}", start.elapsed());
 }
