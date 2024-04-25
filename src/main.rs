@@ -15,15 +15,17 @@ fn read_table(path: &str) -> Peekable<Lines<BufReader<File>>> {
 fn get_headers(file: &mut Peekable<Lines<BufReader<File>>>) -> Vec<String> {
     // Peek at the first item which does not consume it
     let line = match file.peek() {
-        Some(Ok(line)) => line,
-        Some(Err(e)) => panic!("Error reading line: {}", e),
+        Some(line) => match line {
+            Ok(line) => line,
+            Err(e) => panic!("CORE OVERDRIVE: {}", e)
+        },
         None => panic!("No headers available"),
     };
 
     // Clone the line string to create an owned version of the headers
     let headers = line.split('\t')
                       .map(|x| x.to_string())
-                      .collect::<Vec<String>>();
+                      .collect();
 
     headers
 }
