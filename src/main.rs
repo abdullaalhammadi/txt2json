@@ -77,13 +77,12 @@ fn get_records(mut file: Peekable<Lines<BufReader<File>>>, headers: Vec<String>,
             Ok(size) => size,
             Err(e) => panic!("This was not supposed to happen: {}", e)
         };
-    
     }
+    
     match output.seek(SeekFrom::End(-1)) {
         Ok(a) => a,
         Err(e) => panic!("Take it easy: {}", e)
     };
-    // output.write(b"]")
     output.write(b"]").unwrap();
 }
 
