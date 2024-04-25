@@ -1,10 +1,10 @@
 use std::fs::File;
 use std::io::{BufRead, BufReader, Lines};
 use std::iter::{zip, Peekable};
-use std::time::Instant;
+use std::time::{Instant, Duration};
 
 fn read_table(path: &str) -> Peekable<Lines<BufReader<File>>> {
-    let f = match File::open(path) {
+    let f: File = match File::open(path) {
         Ok(val) => val,
         Err(e) => panic!("No need to panic! {}", e)
     };
@@ -14,7 +14,7 @@ fn read_table(path: &str) -> Peekable<Lines<BufReader<File>>> {
 
 fn get_headers(file: &mut Peekable<Lines<BufReader<File>>>) -> Vec<String> {
     // Peek at the first item which does not consume it
-    let line = match file.peek() {
+    let line: &String = match file.peek() {
         Some(line) => match line {
             Ok(line) => line,
             Err(e) => panic!("CORE OVERDRIVE: {}", e)
@@ -23,7 +23,7 @@ fn get_headers(file: &mut Peekable<Lines<BufReader<File>>>) -> Vec<String> {
     };
 
     // Clone the line string to create an owned version of the headers
-    let headers = line.split('\t')
+    let headers: Vec<String> = line.split('\t')
                       .map(|x| x.to_string())
                       .collect();
 
@@ -45,7 +45,7 @@ fn get_records(file: Peekable<Lines<BufReader<File>>>, headers: Vec<String>) {
                 Ok(num) => num.to_string(), // If it's a number, use it as-is
                 Err(_) => format!(r#""{}""#, i.1), // If not, wrap it in quotes
             };
-            let entry = format!(r#""{}": {},"#, i.0, formatted_value);
+            let entry: String = format!(r#""{}": {},"#, i.0, formatted_value);
             record.push_str(entry.as_str());
         }
         record.insert(0, '{');
@@ -65,10 +65,10 @@ fn get_records(file: Peekable<Lines<BufReader<File>>>, headers: Vec<String>) {
 }
 
 fn main() {
-    let start = Instant::now();
+    let start: Instant = Instant::now();
     let mut table = read_table("src/data.txt");
     let headers = get_headers(&mut table);
     get_records(table, headers);
-    let duration = start.elapsed();
+    let duration: Duration = start.elapsed();
     println!("{:#?}", duration)
 }
