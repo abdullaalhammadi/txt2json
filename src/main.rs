@@ -40,7 +40,7 @@ fn get_headers(file: &mut Peekable<Lines<BufReader<File>>>) -> Vec<String> {
 }
 
 fn get_records(mut file: Peekable<Lines<BufReader<File>>>, headers: Vec<String>, mut output: File) {
-    match output.write(b"[") {
+    match output.write_all(r#"{"data": ["#.as_bytes()) {
         Ok(size) => size,
         Err(e) => panic!("This was not supposed to happen: {}", e)
     };
@@ -83,7 +83,7 @@ fn get_records(mut file: Peekable<Lines<BufReader<File>>>, headers: Vec<String>,
         Ok(a) => a,
         Err(e) => panic!("Take it easy: {}", e)
     };
-    output.write(b"]").unwrap();
+    output.write(b"]}").unwrap();
 }
 
 fn main() {
