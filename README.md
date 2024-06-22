@@ -17,8 +17,8 @@ Given a TSV file (`src/data.txt`):
 
 ```
 name	age	city
-Alice	30	New York
-Bob	25	Los Angeles
+Ahmed	24	Abu Dhabi
+Rashed	25	Dubai
 ```
 
 The resulting JSON file (`src/data.json`) will be:
@@ -27,14 +27,14 @@ The resulting JSON file (`src/data.json`) will be:
 {
   "data": [
     {
-      "name": "Alice",
-      "age": 30,
-      "city": "New York"
+      "name": "Ahmed",
+      "age": 24,
+      "city": "Abu Dhabi"
     },
     {
-      "name": "Bob",
+      "name": "Rashed",
       "age": 25,
-      "city": "Los Angeles"
+      "city": "Dubai"
     }
   ]
 }
