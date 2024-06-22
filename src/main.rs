@@ -5,7 +5,7 @@ use std::iter::{zip, Peekable};
 use std::time::Instant;
 
 fn init_file() -> File {
-    let file = File::create("src/dummy.json");
+    let file = File::create("src/data.json");
     match file {
         Ok(file) => file,
         Err(e) => panic!("Error: {}", e)
@@ -15,7 +15,7 @@ fn init_file() -> File {
 fn read_table(path: &str) -> Peekable<Lines<BufReader<File>>> {
     let f: File = match File::open(path) {
         Ok(val) => val,
-        Err(e) => panic!("No need to panic! {}", e)
+        Err(e) => panic!("File error: {}", e)
     };
     let content: Peekable<Lines<BufReader<File>>> = BufReader::new(f).lines().peekable();
     return content;
@@ -26,7 +26,7 @@ fn get_headers(file: &mut Peekable<Lines<BufReader<File>>>) -> Vec<String> {
     let line: &String = match file.peek() {
         Some(line) => match line {
             Ok(line) => line,
-            Err(e) => panic!("CORE OVERDRIVE: {}", e)
+            Err(e) => panic!("Issue with headers {}", e)
         },
         None => panic!("No headers available"),
     };
@@ -50,7 +50,7 @@ fn get_records(mut file: Peekable<Lines<BufReader<File>>>, headers: Vec<String>,
     for line in file {
         let datapoint = match line {
             Ok(dp) => dp,
-            Err(e) => panic!("Calm down please {}", e)
+            Err(e) => panic!("Issue with record: {}", e)
         };
         let datapoint: Vec<&str> = datapoint.split("\t").collect();
         let zipped = zip(&headers, datapoint);
@@ -81,7 +81,7 @@ fn get_records(mut file: Peekable<Lines<BufReader<File>>>, headers: Vec<String>,
     
     match output.seek(SeekFrom::End(-1)) {
         Ok(a) => a,
-        Err(e) => panic!("Take it easy: {}", e)
+        Err(e) => panic!("Issue with output: {}", e)
     };
     output.write(b"]}").unwrap();
 }
